@@ -4,7 +4,14 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'doc/**'
+      - '.github/workflows/build-latex.yml'
+
   pull_request:
+    paths:
+      - 'doc/**'
+      - '.github/workflows/build-latex.yml'
 
 jobs:
   build-pdf:
