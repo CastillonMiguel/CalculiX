@@ -30,7 +30,10 @@ jobs:
 
     # Step 3: Compile LaTeX to PDF (First Pass)
     - name: First LaTeX Compilation
-      run: pdflatex -interaction=nonstopmode doc/CalculiX.tex || true
+      run: |
+        latex -interaction=nonstopmode doc/CalculiX.tex
+        dvips doc/CalculiX.dvi -o doc/CalculiX.ps
+        ps2pdf -dALLOWPSTRANSPARENCY doc/CalculiX.ps doc/CalculiX.pdf
 
     # Step 4: Run Biber for Bibliography
     - name: Run Biber
@@ -42,7 +45,7 @@ jobs:
 
     # Step 6: Compile LaTeX to PDF (Final Pass)
     - name: Final LaTeX Compilation
-      run: pdflatex -interaction=nonstopmode doc/CalculiX.tex || true
+      run: pdflatex -interaction=nonstopmode -halt-on-error doc/CalculiX.tex
 
     # Step 7: Upload the artifact
     - name: Upload PDF
