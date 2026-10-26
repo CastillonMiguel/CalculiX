@@ -16,7 +16,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Step 2: Set up TeX Live environment
+    # Step 2: Install TeX Live and required packages
     - name: Install TeX Live and required packages
       run: |
         sudo apt-get update
@@ -26,28 +26,35 @@ jobs:
           texlive-latex-extra \
           texlive-science \
           texlive-bibtex-extra \
+          texlive-pstricks \
+          ghostscript \
+          latex2html \
           biber
 
-    # Step 3: Compile LaTeX to PDF (First Pass)
+    # Step 3: First LaTeX compilation
     - name: First LaTeX Compilation
-      run: |
-        latex -interaction=nonstopmode doc/CalculiX.tex
-        dvips doc/CalculiX.dvi -o doc/CalculiX.ps
-        ps2pdf -dALLOWPSTRANSPARENCY doc/CalculiX.ps doc/CalculiX.pdf
+      working-directory: doc
+      run: latex -interaction=nonstopmode CalculiX.tex
 
     # Step 4: Run Biber for Bibliography
     - name: Run Biber
-      run: biber doc/CalculiX || true
+      working-directory: doc
+      run: biber CalculiX || true
 
-    # Step 5: Compile LaTeX to PDF (Second Pass)
+    # Step 5: Second LaTeX compilation
     - name: Second LaTeX Compilation
-      run: pdflatex -interaction=nonstopmode doc/CalculiX.tex || true
+      working-directory: doc
+      run: latex -interaction=nonstopmode CalculiX.tex
 
-    # Step 6: Compile LaTeX to PDF (Final Pass)
+    # Step 6: Final LaTeX compilation
     - name: Final LaTeX Compilation
-      run: pdflatex -interaction=nonstopmode -halt-on-error doc/CalculiX.tex
+      working-directory: doc
+      run: |
+        latex -interaction=nonstopmode CalculiX.tex
+        dvips CalculiX.dvi -o CalculiX.ps
+        ps2pdf -dALLOWPSTRANSPARENCY CalculiX.ps CalculiX.pdf
 
-    # Step 7: Upload the artifact
+    # Step 7: Upload the PDF artifact
     - name: Upload PDF
       uses: actions/upload-artifact@v4
       with:
