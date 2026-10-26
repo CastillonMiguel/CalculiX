@@ -1,0 +1,52 @@
+name: Build LaTeX PDF
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-pdf:
+    name: Compile LaTeX to PDF
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Step 2: Set up TeX Live environment
+    - name: Install TeX Live and required packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          texlive-fonts-recommended \
+          texlive-latex-recommended \
+          texlive-latex-extra \
+          texlive-science \
+          texlive-bibtex-extra \
+          biber
+
+    # Step 3: Compile LaTeX to PDF (First Pass)
+    - name: First LaTeX Compilation
+      run: pdflatex -interaction=nonstopmode CalculiX.tex || true
+
+    # Step 4: Run Biber for Bibliography
+    - name: Run Biber
+      run: biber CalculiX || true
+
+    # Step 5: Compile LaTeX to PDF (Second Pass)
+    - name: Second LaTeX Compilation
+      run: pdflatex -interaction=nonstopmode CalculiX.tex || true
+
+    # Step 6: Compile LaTeX to PDF (Final Pass)
+    - name: Final LaTeX Compilation
+      run: pdflatex -interaction=nonstopmode CalculiX.tex || true
+
+    # Step 7: Upload the artifact
+    - name: Upload PDF
+      uses: actions/upload-artifact@v4
+      with:
+        name: CalculiX-pdf
+        path: CalculiX.pdf
