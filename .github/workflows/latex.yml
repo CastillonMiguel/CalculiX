@@ -1,0 +1,71 @@
+name: Build LaTeX PDF
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+    paths:
+      - 'doc/**'
+      - '.github/workflows/build-latex.yml'
+
+  pull_request:
+    paths:
+      - 'doc/**'
+      - '.github/workflows/build-latex.yml'
+
+jobs:
+  build-pdf:
+    name: Compile LaTeX to PDF
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Step 2: Install TeX Live and required packages
+    - name: Install TeX Live and required packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          texlive-fonts-recommended \
+          texlive-latex-recommended \
+          texlive-latex-extra \
+          texlive-science \
+          texlive-bibtex-extra \
+          texlive-pstricks \
+          ghostscript \
+          latex2html \
+          biber
+
+    # Step 3: First LaTeX compilation
+    - name: First LaTeX Compilation
+      working-directory: doc
+      run: latex -interaction=nonstopmode CalculiX.tex
+
+    # Step 4: Run Biber for Bibliography
+    - name: Run Biber
+      working-directory: doc
+      run: biber CalculiX || true
+
+    # Step 5: Second LaTeX compilation
+    - name: Second LaTeX Compilation
+      working-directory: doc
+      run: latex -interaction=nonstopmode CalculiX.tex
+
+    # Step 6: Final LaTeX compilation
+    - name: Final LaTeX Compilation
+      working-directory: doc
+      run: |
+        latex -interaction=nonstopmode CalculiX.tex
+        dvips CalculiX.dvi -o CalculiX.ps
+        ps2pdf -dALLOWPSTRANSPARENCY CalculiX.ps CalculiX.pdf
+
+    # Step 7: Upload the PDF artifact
+    - name: Upload PDF
+      uses: actions/upload-artifact@v4
+      with:
+        name: CalculiX-pdf
+        path: doc/CalculiX.pdf
